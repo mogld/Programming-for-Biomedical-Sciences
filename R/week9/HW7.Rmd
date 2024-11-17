@@ -1,0 +1,836 @@
+---
+title: "HW7"
+author: "202255669 이진솔"
+output: html_notebook
+---
+
+## 3.2.4
+
+#### 1. ggplot(data = mpg) 을 실행하라. 어떤 것이 나오는가?
+```{r}
+ggplot(data=mpg)
+```
+ggplot 함수만으로는 그래프를 그릴 수 없기 때문에 아무것도 나오지 않는다.  
+ggplot은 그래프를 그리기 위한 기본 틀을 생성할 뿐, 데이터를 어떤 방식으로 시각화할지에 대한 추가적인 정보(예: aes, geom_point, geom_line 등)가 필요하다.  
+<br>
+
+#### 2.mpg 에 행이 몇개 있는가? 열은 몇개인가? 
+```{r}
+dim(mpg)
+```
+*dim()*을 사용하면 mpg 데이터셋의 행(row)과 열(column) 개수를 확인할 수 있다.
+
+행: mpg 데이터셋에는 총 234개의 행이 있다.  
+열: mpg 데이터셋에는 총 11개의 열이 있다.  
+<br>
+
+#### 3. drv 변수는 무엇을 의미하는가? 이를 알아보기 위해 ?mpg 을 실행하여 도움말을 읽으라.
+```{r}
+?mpg
+```
+drv  
+the type of drive train, where f = front-wheel drive, r = rear wheel drive, 4 = 4wd  
+<br>
+drv 변수는 자동차의 구동 방식을 나타낸다.  
+f는 전륜구동(front-wheel drive),  
+r는 후륜구동(rear-wheel drive),  
+4는 사륜구동(four-wheel drive)을 의미한다.  
+<br>
+
+#### 4. hwy vs cyl 산점도를 그리라.
+```{r}
+ggplot(data = mpg, aes(x = hwy, y = cyl)) + geom_point()
+```
+
+<br>
+
+#### 5. class vs drv 산점도를 그리면 어떻게 되는가? 이 플롯은 왜 쓸모가 없는가?
+```{r}
+ggplot(data = mpg, aes(x = class, y = drv)) + geom_point()
+```
+
+class와 drv 변수는 차량종류와 구동방식이라는 옵션 정보들 정도만 나타내는 숫자가 아닌 범주형 데이터이다.  
+따라서 추세나 관계를 파악하는데에는 산점도를 이용한 plot이 적합하지 않다고 보인다. 
+
+## 3.3.1
+
+#### 1. What’s gone wrong with this code? Why are the points not blue?  
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+코드에서 "blue"가 범주형 값으로 인식되어 색상으로 적용되지 않은 것이이다.   
+"blue"를 변수로 간주하지 않고 고정된 색상으로 설정하려면, aes() 함수 밖에 color = "blue"를 지정해야 한다.  
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
+```
+이렇게 하면 모든 점이 파란색으로 표시되며, 범주형 값으로 잘못 매핑되지 않는다.    
+<br>
+
+#### 2. Which variables in mpg are categorical? Which variables are continuous? (Hint: type ?mpg to read the documentation for the dataset). How can you see this information when you run mpg?  
+```{r}
+?mpg
+str(mpg)
+```
+범주형 변수: manufacturer, model, trans, drv, fl, class  
+연속형 변수: displ, year, cyl, cty, hwy  
+<br>
+*?mpg*를 실행해 각 변수의 설명을 볼 수 있고, *str(mpg)*를 실행해 각 변수에 대한 유형을 확인해볼 수 있다.  
+이 때 factor로 표시된 변수는 범주형, num이나 int로 표시된 변수는 연속형이다.  
+<br>
+
+#### 3. Map a continuous variable to color, size, and shape. How do these aesthetics behave differently for categorical vs. continuous variables?  
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = hwy, size = hwy))
+
+```
+연속형 변수를 **색상(color)**이나 **크기(size)**에 매핑하면 색상은 그라데이션으로, 크기는 값에 따라 비례적으로 커지거나 작아진다.  
+<br>
+```{r}
+ggplot(data = mpg, aes(x = displ, y = hwy, color = hwy, size = hwy, shape = hwy)) + 
+  geom_point()
+
+```
+
+하지만 연속형 변수를 **모양(shape)**에 매핑하면 위와 같이 오류가 발생한다.    
+모양은 보통 범주형 데이터를 위해 설계되어, 값에 따라 고유한 모양을 지정할 수 없기 때문이다.  
+<br>
+```{r}
+ggplot(data = mpg, aes(x = displ, y = hwy, color = class, size = class, shape = class)) + 
+  geom_point()
+```
+위와 같이 범주형 변수는 color와 shape에 매핑이 적합하며, 색상이나 모양을 범주별로 다르게 지정할 수 있다.  
+size에 매핑하면 의미가 모호해질 수 있다.  
+<br>
+
+#### 4. What happens if you map the same variable to multiple aesthetics?  
+같은 변수를 여러 속성(예: 색상과 크기)에 매핑하면 해당 변수의 변화에 따라 여러 시각적 요소가 동시에 달라진다.  
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = hwy, size = hwy))
+```
+위의 경우 hwy에 따라 색상과 크기가 동시에 바뀐다.  
+이 방법은 변수가 강조되지만 가독성이 떨어질 수 있다.    
+<br>
+
+#### 5. What does the stroke aesthetic do? What shapes does it work with? (Hint: use ?geom_point)  
+```{r}
+?geom_point
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), shape = 21, color = "black", fill = "blue", stroke = 2)
+```
+**stroke** 속성은 ggplot2에서 외곽선 두께를 조정하는 역할을 한다.    
+특히, **채움색과 외곽선 색을 각각 설정할 수 있는 도형(21번~24번)**에만 적용된다.    
+<br>
+
+#### 6. What happens if you map an aesthetic to something other than a variable name, like aes(colour = displ < 5)? Note, you’ll also need to specify x and y. 
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = displ < 5))
+```
+displ < 5처럼 조건문을 사용해 색상을 매핑하면, TRUE/FALSE 논리값으로 표시된다.  
+<br>
+
+## 3.5.1
+
+#### 1. What happens if you facet on a continuous variable?
+각 고유 값에 대해 별도의 패널이 만들어진다. 연속형 변수에 고유 값이 많을 경우 패널이 너무 많아져, 그래프가 복잡하고 해석하기 어려워질 수 있다. **facet**은 일반적으로 범주형 변수와 함께 사용할 때 가장 유용하다.  
+
+#### 2. What do the empty cells in plot with facet_grid(drv ~ cyl) mean? How do they relate to this plot?
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = drv, y = cyl))
+```
+빈 셀은 drv와 cyl의 특정 조합이 데이터에 존재 하지 않는다는 것을 의미한다.   
+위의 경우 예를 들어, drv=4일 때 cyl=5인 조합은 없다.    
+<br>
+
+#### 3. What plots does the following code make? What does . do?
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+```
+위의 경우, drv 변수를 행(row) 방향으로 fecet한다.  
+각 drv 값마다 행이 만들어지고, displ과 hwy 변수의 산점도가 각 facet에 나타난다.  
+여기서 .는 해당 방향(열)을 비워둔다는 의미로 facet을 **행 방향**으로만 나눌 때 사용한다.  
+<br>
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl)
+```
+위의 경우, cyl 변수를 열(column) 방향으로 facet하여 각 cyl 값마다 열이 만들어 진다.  
+여기서 .는 해당 방향(행)을 비워둔다는 의미로 facet을 **열 방향**으로만 나눌 때 사용한다.  
+<br>
+
+#### 4. Take the first faceted plot in this section:
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+
+#### What are the advantages to using faceting instead of the colour aesthetic? What are the disadvantages? How might the balance change if you had a larger dataset?  
+<br>
+  
+  
+  장점:  
+  
+    facet_wrap은 패널을 여러 행과 열에 자동으로 배치하여, 특정 변수의 각 값에 대해 패널을 구성할 수 있어 시각적으로 깔끔하다.  
+    
+    색상(color)을 사용하여 변수별로 구분하는 대신, facet을 사용하면 더 명확하게 비교할 수 있다. 
+  
+     
+  단점:  
+  
+    facet의 개수가 많아질 경우 전체 plot이 복잡해질 수 있고, 특히 데이터가 큰 경우 화면 공간을 많이 차지할 수 있다.  
+    
+    패널로 나뉜 경우, 전체적인 데이터 분포를 동시에 비교하기 어려울 수 있다.  
+  
+      
+  데이터 셋이 더 커질 경우:  
+  
+    데이터가 더 커진다면 색상 구분이 더 효과적일 수 있다. facet은 적당한 범주의 데이터 셋에서 더 유용할 것이다.  
+    
+    
+
+  
+
+#### 5. Read ?facet_wrap. What does nrow do? What does ncol do? What other options control the layout of the individual panels? Why doesn’t facet_grid() have nrow and ncol arguments?
+```{r}
+?facet_wrap
+```
+facet_wrap에서 nrow는 행(row)의 개수를 지정하고, ncol은 열(column)의 개수를 지정한다. 이 옵션을 통해 패널의 배치를 조정할 수 있다.   
+추가로 scales 옵션을 사용하여 각 패널의 축 범위를 조정할 수 있다.  
+
+<br>
+facet_grid는 행과 열로 고정된 격자 형태로 facet을 만들기 때문에 nrow와 ncol 옵션이 없다. facet_grid는 일반적으로 두 개의 범주형 변수 간 관계를 시각화할 때 사용한다.  
+
+
+<br>
+
+#### 6. Which of the following two plots makes it easier to compare engine size (displ) across cars with different drive trains? What does this say about when to place a faceting variable across rows or columns?
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(drv ~ .)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(. ~ drv)
+```
+첫 번째 plot은 drv를 행 방향으로 facet하고, 두 번째 플롯은 drv를 열 방향으로 facet한다.  
+두 plot 중에는 첫번째 plot이 비교하기 더 쉽다.  
+첫 번째 plot에서는 drv 변수에 따라 행 방향으로 패널이 나뉘어 각 구동 방식별 데이터가 한 행에 정렬되므로, 위아래로 비교하기가 더 직관적이다. 즉, 각 구동 방식의 엔진 크기 분포를 수직으로 배치하여 빠르게 비교할 수 있다.  
+<br>
+
+반면, 두 번째 plot은 drv를 열 방향으로 패널을 나눴으므로, 좌우로 비교해야 한다. 이 경우, 시각적으로 비교하는 데 더 많은 이동이 필요해 이해하기가 불편할 수 있다.  
+<br>
+위의 예시는 비교하려는 변수를 행 방향으로 배치하는 것이 직관적이라는 것을 보여준다. 하지만 facet변수가 많거나 가로로 나열하는 것이 더 적합한 경우는 열방향으로 배치할 수도 있다. 따라서 변수를 행과 열 중 어느 방향으로 배치할지는 비교하려는 데이터의 특성과 시각적으로 비교가 더 쉬운 방향을 고려하여 결정해야 한다.  
+<br>
+
+#### 7. Recreate this plot using facet_wrap() instead of facet_grid(). How do the positions of the facet labels change?
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+```
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_wrap(~ drv)
+```
+위의 경우, facet_wrap()은 패널을 자동으로 배치하며, 각 패널의 라벨 위치가 위쪽 중앙에 나타난다.  
+facet_grid(drv ~ .)에서와 달리 패널이 행 또는 열로만 배치되지 않고, 사용자가 지정한 nrow 또는 ncol에 따라 패널 배치를 조정할 수 있다.  
+<br>
+
+## 3.6.1
+#### 1. What geom would you use to draw a line chart? A boxplot? A histogram? An area chart?
+선 그래프 (Line chart): geom_line()  
+박스 플롯 (Boxplot): geom_boxplot()  
+히스토그램 (Histogram): geom_histogram()  
+면적 그래프 (Area chart): geom_area()  
+<br>
+
+#### 2. Run this code in your head and predict what the output will look like. Then, run the code in R and check your predictions.
+각 drv별로 다른 색상의 점이 나타나고, 각 색상에 해당하는 곡선이 추가될 것이다.  
+se = FALSE는 신뢰 구간을 표시하지 않도록 설정해 smmoth 곡선에 신뢰 구간 음영이 없을 것이다.  
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+#### 3. What does show.legend = FALSE do? What happens if you remove it? Why do you think I used it earlier in the chapter?  
+show.legend = FALSE는 범례(legend)를 숨긴다.  
+이것을 제거하면 범례가 다시 표시된다.  
+책에서 이를 사용한 이유는 시각화에서 범례가 필요하지 않다고 판단했거나 시각을 단순화하기 위해서일 것이다.  
+<br>
+
+
+#### 4. What does the se argument to geom_smooth() do?
+se = TRUE로 설정하면 smmoth 곡선 주위에 신뢰 구간을 나타내는 음영이 추가된다.   
+기본값은 TRUE이고, se = FALSE로 설정하면 신뢰 구간을 제거하여 곡선만 표시된다.  
+<br>
+
+#### 5. Will these two graphs look different? Why/why not?
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() + 
+  geom_smooth()
+ggplot() + 
+  geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
+```
+두 그래프는 동일하게 보일 것이다. 왜냐하면 두 코드 모두 동일한 데이터를 사용하여 같은 산점도와 smooth 곡선을 그리기 때문이다.  
+첫 번째 코드에서는 데이터와 매핑을 ggplot() 함수에서 설정했지만, 두 번째 코드에서는 각각의 geom 함수에서 설정했습니다. 시각적으로는 차이가 없으나, 두 번째 방법이 더 명시적이라고 할 수 있다.  
+<br>
+
+#### 6. Recreate the R code necessary to generate the following graphs. Note that wherever a categorical variable is used in the plot, it’s drv.
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(color = "black") + 
+  geom_smooth(se = FALSE)
+
+```
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(color = "black") + 
+  geom_smooth(aes(group = drv), color = "blue", se = FALSE)
+```
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE, color = "blue")
+```
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(aes(linetype = drv), se = FALSE)
+```
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, fill = drv)) + 
+  geom_point(size = 4, shape = 21, color = "white", stroke = 1.5)
+```
+## 3.7.1
+#### 1. What is the default geom associated with stat_summary()? How could you rewrite the previous plot to use that geom function instead of the stat function?
+stat_summary()의 기본 geom은 geom_pointrange()이다. stat_summary()는 요약 통계를 그릴 때 사용되며, 주로 평균과 신뢰 구간 등을 표시할 때 유용하다.  
+stat_summary() 대신 기본 geom을 사용하고 싶다면 geom_pointrange()를 사용할 수 있다.  
+```{r}
+ggplot(data = diamonds) +  
+  geom_pointrange(
+    mapping = aes(x = cut, y = depth, ymin = ..ymin.., ymax = ..ymax..),
+    stat = "summary",
+    fun.min = min,
+    fun.max = max,
+    fun = median
+  )
+```
+```{r}
+ggplot(data = diamonds) +
+  geom_pointrange(mapping = aes (x = cut, y = depth, ymin =depth, ymax =depth))
+```
+
+#### 2. What does geom_col() do? How is it different to geom_bar()?
+geom_col()은 x축과 y축의 값을 그대로 사용해 막대 그래프를 그린다. 즉, 데이터 프레임 내에 이미 y축 값이 있는 경우 geom_col()을 사용하여 그 값을 그대로 막대의 높이로 나타낸다.  
+
+<br>
+geom_bar()는 y값이 주어지지 않으면 자동으로 데이터의 개수를 세어 빈도 막대 그래프를 그린다. 즉, geom_bar()는 stat = "count"가 기본 설정이며, 별도의 y값이 필요하지 않다.  
+
+<br>  
+
+
+#### geom_col()은 y축 값을 그대로 사용하고, geom_bar()는 y축 값을 따로 지정하지 않으면 자동으로 개수를 센다.  
+
+<br>
+
+#### 3. Most geoms and stats come in pairs that are almost always used in concert. Read through the documentation and make a list of all the pairs. What do they have in common?
+대부분의 geom과 stat은 pair을 이루며, 동일한 데이터 변환과 시각화 목적을 가지고 있다. 예를 들어, geom_bar()는 stat_count()와 함께 사용되며, geom_smooth()는 stat_smooth()와 함께 사용된다. 
+<br>
+  주요예시:  
+  
+    geom_bar() ↔ stat_count()  
+    geom_col() ↔ stat_identity()
+    geom_histogram() ↔ stat_bin()
+    geom_density() ↔ stat_density()
+    geom_boxplot() ↔ stat_boxplot()
+    geom_smooth() ↔ stat_smooth()
+    geom_point() ↔ stat_identity()
+    geom_line() ↔ stat_identity()
+    geom_violin() ↔ stat_ydensity()
+    geom_pointrange() ↔ stat_summary()
+    geom_errorbar() ↔ stat_summary()
+    geom_ribbon() ↔ stat_summary()
+    
+http://ggplot2.tidyverse.org/reference/ 해당 링크를 참고할 수 있다.  
+
+<br>
+
+#### 4. What variables does stat_smooth() compute? What parameters control its behaviour?  
+
+  stat_smooth()의 주요 variables:  
+  
+    y
+    ymin
+    ymax
+
+  주요 parameter:  
+  
+    method: smooth함수를 선택하는 옵션
+    se: 신뢰 구간을 표시할지 여부를 결정하며, TRUE 또는 FALSE로 설정
+    level: 신뢰 구간의 수준을 설정합니다 (예: 0.95는 95% 신뢰 구간).
+    span: method = "loess"일 때 곡선의 smoothness을 제어.
+```{r}
+ggplot(data = mpg, aes(x = displ, y = hwy)) +
+  geom_point(aes(color = drv)) +
+  stat_smooth(se = FALSE)
+```
+#### 5. In our proportion bar chart, we need to set group = 1. Why? In other words what is the problem with these two graphs?
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = after_stat(prop)))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = color, y = after_stat(prop)))
+```
+비율 막대 그래프에서 group = 1을 설정하는 이유는 x축의 각 범주가 독립적인 그룹으로 간주되도록 하기 위함이다. group = 1을 설정하지 않으면 각 범주가 개별적으로 계산되지 않기 때문에 원하는 비율이 나타나지 않게 된다.  
+
+위 두 그래프의 문제점은 비율이 제대로 계산되지 않는다는 것이이다.이 두 그래프에서는 group = 1을 설정하지 않아 각 cut의 값들이 별도로 그룹화되지 않았다. 결과적으로 prop이 전체 데이터를 대상으로 계산되어, 각 cut의 비율이 올바르게 표시되지 않는는다. group = 1을 추가하여 각 cut 범주가 독립적인 그룹으로 계산되도록 해야 올바른 비율이 표시된다.  
+
+## 3.8.1
+#### 1. What is the problem with this plot? How could you improve it?
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point()
+```
+  
+  
+   
+    문제점: 여러 데이터 포인트가 동일한 위치에 있어서 겹치기 때문에 모든 데이터를 확인할 수 없다. 겹친 점들이 많아 실제 데이터보다 적은 점들이 보이게 된다.
+    개선방법: geom_jitter()를 사용하여 점들을 약간씩 흩어지게 하면 겹치는 문제를 줄이고 데이터를 더 잘 시각화할 수 있다.  
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_jitter()
+
+```
+#### 2. What parameters to geom_jitter() control the amount of jittering?
+geom_jitter()에서 점들이 흩어지는 정도는 width와 height 파라미터로 제어할 수 있다.  
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_jitter(width = 0.2, height = 0.2)
+```
+
+#### 3. Compare and contrast geom_jitter() with geom_count()
+```{r}
+# geom jitter
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_jitter()
+```
+```{r}
+# geom count
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_count()
+```
+  
+  
+    geom_jitter(): 점들을 약간씩 흩어지게 하여 시각화한다. 각 데이터 포인트는 약간의 변위가 적용되어 표시된다.
+    geom_count(): 동일한 위치에 여러 데이터 포인트가 있을 경우, 점의 크기를 그 개수에 비례하여 표시한다. 같은 위치에 많은 데이터가 있을수록 점이 커진다.  
+    
+즉, geom_jitter()는 점들을 흩어지게해 데이터를 분리하지만, geom_count()는 점의 크기로 데이터의 중복을 표현한다.
+
+#### 4. What’s the default position adjustment for geom_boxplot()? Create a visualisation of the mpg dataset that demonstrates it.
+geom_boxplot()의 기본 위치 조정 방식은 position = "dodge"이다. 이 위치 조정 방식은 각 범주에 대해 박스 플롯을 나란히 배치하여 서로 겹치지 않도록 한다.
+```{r}
+ggplot(data = mpg, mapping = aes(x = drv, y = hwy, fill = drv)) + 
+  geom_boxplot()
+
+```
+
+## 3.9.1
+#### 1. Turn a stacked bar chart into a pie chart using coord_polar().
+```{r}
+ggplot(data = diamonds, aes(x = factor(1), fill = cut)) +
+  geom_bar(width = 1) +
+  coord_polar(theta = "y") +
+  labs(x = NULL, y = NULL)
+```
+#### 2. What does labs() do? Read the documentation.
+labs() 는 그래프의 레이블을 설정하는 함수로, 축 제목, 그래프 제목, 범례 제목 등을 변경할 수 있다.  
+labs()는 title, subtitle, caption, x, y, fill, color 등의 매개변수를 사용해 그래프의 다양한 요소에 제목을 추가하거나 변경할 수 있다.
+<br>
+
+#### 3. What’s the difference between coord_quickmap() and coord_map()?  
+
+    coord_quickmap(): 지도를 그릴 때 지리적 비율을 빠르게 설정한다. 계산을 단순화하여 비율이 정확히 맞진 않지만, 속도가 빠르다. 일반적으로 지도가 화면에 적절한 비율로 보이도록 조정한다.직선이 유지되지 않는다.
+    coord_map(): 지리적 비율을 정확하게 조정하며, 다양한 투영법을 사용할 수 있습니다. 계산이 더 복잡하고 시간이 오래 걸리지만, 비교적 정확한 지리적 비율을 제공한다. 직선을 (대부분) 유지한다.  
+    
+  <br>
+  
+#### 4. What does the plot below tell you about the relationship between city and highway mpg? Why is coord_fixed() important? What does geom_abline() do?
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline() +
+  coord_fixed()
+```
+  이 plot은 cty(도시 연비)와 hwy(고속도로 연비) 사이에 양의 상관 관계가 있음을 보여준다. 즉, cty가 높을수록 hwy도 높아지는 경향이 있다.  
+  
+    coord_fixed()의 중요성: coord_fixed()는 x축과 y축의 비율을 1:1로 고정하여, 두 축의 단위가 동일한 비율로 표시되도록 한다. 이를 통해 geom_abline()에서 추가한 대각선(기울기 1의 선)이 정확히 45도 각도로 나타나며, cty와 hwy의 관계를 더 직관적으로 이해할 수 있다. 비율이 고정되지 않으면, 축의 비율 차이로 인해 관계가 왜곡될 수 있다.
+    geom_abline()의 역할: geom_abline()은 기본적으로 기울기가 1이고 절편이 0인 대각선을 추가하여, x와 y가 같은 값일 때의 기준선을 나타낸다. 이 선을 기준으로 데이터를 비교할 수 있으며, 이 경우 cty와 hwy의 관계를 평가하는 데 도움을 준다.  
+  <br>
+  
+## 5.2.4
+#### 1. Find all flights that
+
+  Had an arrival delay of two or more hours  
+  
+  Flew to Houston (IAH or HOU)  
+  
+  Were operated by United, American, or Delta  
+  
+  Departed in summer (July, August, and September)  
+  
+  Arrived more than two hours late, but didn’t leave late  
+  
+  Were delayed by at least an hour, but made up over 30 minutes in flight  
+  
+  
+```{r}
+library(nycflights13)
+library(dplyr)
+
+flights %>%
+  filter(arr_delay >= 120,  # Had an arrival delay of two or more hours
+         dest %in% c("IAH", "HOU"),  # Flew to Houston (IAH or HOU)
+         carrier %in% c("UA", "AA", "DL"),  # Were operated by United, American, or Delta
+         month %in% c(7, 8, 9),  # Departed in summer (July, August, and September)
+         arr_delay > dep_delay,  # Arrived more than two hours late, but didn’t leave late
+         dep_delay >= 60, arr_delay - dep_delay > 30)  # Were delayed by at least an hour, but made up over 30 minutes in flight
+```
+<br>
+
+#### 2. Sort flights to find the flights with longest departure delays. Find the flights that left earliest in the morning.
+  가장 긴 출발 지연이 있는 항공편
+```{r}
+flights %>%
+  arrange(desc(dep_delay))
+```
+  가장 이른 시간에 출발한 항공편
+```{r}
+flights %>%
+  arrange(dep_time) %>%
+  filter(!is.na(dep_time))  
+```
+#### 3. Sort flights to find the fastest flights (Hint: try sorting by a calculation).
+
+비행 속도를 기준으로 정렬할 수 있다. 속도는 distance(거리)를 air_time(비행 시간)으로 나누어 계산할 수 있다. 
+```{r}
+flights %>%
+  mutate(speed = distance / (air_time / 60)) %>%
+  arrange(desc(speed))
+
+```
+#### 4. Which flights travelled the farthest? Which travelled the shortest?
+  가장 멀리 이동한 항공편
+```{r}
+flights %>%
+  arrange(desc(distance))
+```
+  가장 짧게 이동한 항공편
+
+```{r}
+flights %>%
+  arrange(distance)
+```
+#### 5. Does it matter what order you used filter() and arrange() in if you’re using both? Why/why not? Think about the results and how much work the functions would have to do.
+filter()와 arrange()의 순서가 중요할 수 있다.  
+filter()로 먼저 데이터를 줄이면 arrange()가 정렬해야 할 데이터 양이 줄어들어 작업 속도가 빨라질 수 있다.  
+arrange()를 먼저 사용하면 전체 데이터셋을 정렬한 후 필터링하므로 불필요한 계산이 발생할 수 있다.  
+
+따라서, 일반적으로 filter()를 먼저 사용하여 데이터를 줄인 후 arrange()를 사용하는 것이 더 효율적이다.  
+<br>
+
+## 5.3.5
+#### 1. Currently dep_time and sched_dep_time are convenient to look at, but hard to compute with because they’re not really continuous numbers. Convert them to a more convenient representation of number of minutes since midnight.
+```{r}
+flights <- flights %>%
+  mutate(
+    dep_time_mins = (dep_time %/% 100) * 60 + (dep_time %% 100),
+    sched_dep_time_mins = (sched_dep_time %/% 100) * 60 + (sched_dep_time %% 100)
+  )
+
+flights
+
+```
+#### 2. Compare air_time with arr_time - dep_time. What do you expect to see? What do you see? What do you need to do to fix it?
+air_time은 실제 비행 시간(분 단위)을 나타낸다.  
+반면, arr_time - dep_time은 출발 시간과 도착 시간을 빼서 얻은 값이므로 정확한 비행 시간을 나타내지 않을 수 있다.  
+따라서 arr_time과 dep_time도 HHMM 형식이므로, 이 값을 분으로 변환해야 한다.
+```{r}
+flights <- flights %>%
+  mutate(
+    dep_time_mins = (dep_time %/% 100) * 60 + (dep_time %% 100),
+    arr_time_mins = (arr_time %/% 100) * 60 + (arr_time %% 100),
+    air_time_calculated = arr_time_mins - dep_time_mins
+  )
+
+# 비교
+flights %>%
+  select(air_time, air_time_calculated)
+
+```
+#### 3. Compare dep_time, sched_dep_time, and dep_delay. How would you expect those three numbers to be related?
+dep_delay는 dep_time과 sched_dep_time의 차이를 나타내는 값으로, 수학적으로는 dep_delay = dep_time - sched_dep_time이기 때문에 같을 것이라고 예상할 수 있다.
+```{r}
+flights <- flights %>%
+  mutate(
+    dep_time_mins = (dep_time %/% 100) * 60 + (dep_time %% 100),
+    sched_dep_time_mins = (sched_dep_time %/% 100) * 60 + (sched_dep_time %% 100),
+    dep_delay_calculated = dep_time_mins - sched_dep_time_mins
+  )
+
+# 결과 비교
+flights %>%
+  select(dep_delay, dep_delay_calculated)
+
+```
+#### 4. Brainstorm as many ways as possible to select dep_time, dep_delay, arr_time, and arr_delay from flights.
+```{r}
+flights %>% select(dep_time, dep_delay, arr_time, arr_delay)
+
+```
+```{r}
+flights %>% select(contains("dep"), contains("arr"))
+
+```
+```{r}
+flights %>% select(starts_with("dep"), starts_with("arr"))
+
+```
+```{r}
+flights %>% select(matches("^(dep|arr)_(time|delay)"))
+
+```
+```{r}
+variables <- c("dep_time", "dep_delay", "arr_time", "arr_delay")
+flights %>% select(all_of(variables))
+
+```
+```{r}
+flights %>% select(4, 6, 7, 9)  # dep_time, dep_delay, arr_time, arr_delay
+
+```
+#### 5. What happens if you include the name of a variable multiple times in a select() call?
+select() 함수에서 동일한 변수 이름을 여러 번 포함하면, 결과에는 해당 변수가 한 번만 선택된다.  
+dplyr은 select()에서 중복된 변수 이름을 자동으로 제거하여, 결과에 중복되지 않도록 처리한다.  
+<br>
+
+#### 6. What does the any_of() function do? Why might it be helpful in conjunction with this vector?
+```{r}
+variables <- c("year", "month", "day", "dep_delay", "arr_delay")
+variables
+```
+any_of()는 dplyr의 헬퍼 함수로, 지정된 칼럼 이름 목록 중 실제 데이터셋에 존재하는 칼럼만 선택할 수 있도록 해준다.  
+
+즉, 지정한 칼럼 이름 중 일부가 데이터셋에 없어도 오류를 발생시키지 않고, 실제로 존재하는 칼럼만 선택한다.  
+
+    any_of()가 유용한 이유:
+      주어진 벡터가 위의 코드와 같을 때,  select(flights, any_of(variables))와 같이 사용하면 flights 데이터셋에 포함된 variables의 칼럼만 선택된다. 벡터에 있는 모든 칼럼이 flights 데이터셋에 없어도 오류가 발생하지 않으며, 데이터셋에 존재하는 칼럼만 선택된다. 
+
+즉, 코드 유연성, 코드 재사용성.
+<br>
+
+#### 7. Does the result of running the following code surprise you? How do the select helpers deal with case by default? How can you change that default?
+```{r}
+select(flights, contains("TIME")) 
+```
+contains() 함수가 대소문자 구분이 안된다.    
+대소문자를 구분하여 검색하려면 **ignore.case = FALSE** 옵션을 추가할 수 있다. 
+```{r}
+select(flights, contains("TIME", ignore.case = FALSE)) 
+```
+## 5.4.6. 
+#### 1. Which carrier has the worst delays? Challenge: can you disentangle the effects of bad airports vs. bad carriers? Why/why not? (Hint: think about flights %>% group_by(carrier, dest) %>% summarise(n()))
+```{r}
+carrier_delays <- flights %>%
+  group_by(carrier) %>%
+  summarise(avg_dep_delay = mean(dep_delay, na.rm = TRUE)) %>%
+  arrange(desc(avg_dep_delay))
+
+carrier_delays
+```
+worst delays: **F9**  
+<br>
+
+### challenge:can you disentangle the effects of bad airports vs. bad carriers? Why/why not?
+```{r}
+carrier_dest_counts <- flights %>%
+  group_by(carrier, dest) %>%
+  summarise(count = n(), avg_dep_delay = mean(dep_delay, na.rm = TRUE)) %>%
+  arrange(desc(avg_dep_delay))
+
+carrier_dest_counts
+
+```
+
+특정 항공사-공항 조합에서의 평균 지연 시간을 확인할 수 있다. 하지만 이 방식으로 공항과 항공사 간의 지연 원인을 완벽하게 구분하는 것은 어렵다. 예를 들어, 항공기 스케줄이나 특정 시간대의 혼잡도, 날씨 등의 다른 요소들도 지연에 영향을 미치기 때문에, 단순히 공항과 항공사만을 비교해서는 전체적인 지연 원인을 명확하게 구분하기 어렵다. 지연 원인을 완전히 이해하려면 더 많은 변수를 고려해야 한다.  
+<br>
+
+#### 2 . What does the sort argument to count() do. Can you explain it in terms of the dplyr verbs you’ve learned so far?
+count() 함수의 sort = TRUE 인수를 사용하면, 결과가 자동으로 카운트가 큰 순서대로 정렬된다.
+```{r}
+carrier_counts <- flights %>%
+  count(carrier, sort = TRUE)
+carrier_counts
+```
+sort = TRUE는 arrange(desc(n))와 같은 기능을 수행한다고 말할 수 있다.
+```{r}
+carrier_counts <- flights %>%
+  count(carrier) %>%         
+  arrange(desc(n)) #내림차순 정렬
+
+carrier_counts
+```
+## 9.3.3
+#### 1. 필드가 “|” 로 분리된 파일을 읽으려면 어떤 함수를 사용하겠는가?
+read_delim()
+```{r}
+read_delim("data/students.csv", delim = "|", show_col_types = FALSE)
+```
+#### 2. read_csv() 와 read_tsv() 가 공통으로 가진 인수는 file, skip, comment 외에 또 무엇이 있는가?
+```{r}
+intersect(names(formals(read_csv)), names(formals(read_tsv)))
+```
+  col_names와 col_types: 열 이름과 열을 어떻게 구문 분석할지를 지정  
+  
+  locale: 인코딩 설정과 소수점 구분 기호("." 또는 ",") 등을 결정하는 데 중요  
+  
+  na와 quoted_na: 결측값으로 처리할 문자열을 제어  
+  
+  trim_ws: 셀 앞뒤의 공백을 제거한 후 구문 분석  
+  
+  n_max: 읽을 최대 행 수를 설정  
+  
+  guess_max: 열 유형을 추측할 때 사용할 행 수를 설정  
+  
+  progress: 진행 표시줄을 표시할지 여부를 결정  
+  
+  <br>
+  
+#### 3. read_fwf() 에서 가장 중요한 인수는 무엇인가?
+
+read_fwf() 함수에서 가장 중요한 인수는 col_positions이다.  
+이 인수는 데이터 열이 시작하고 끝나는 위치를 함수에 알려주며, "fixed-width formats"의 파일을 읽을 때 사용된다.  
+<br>
+
+#### 4. CSV 파일의 문자열에 쉼표가 포함되는 경우가 있다. 그것들이 문제를 일으 키지 않게 하려면 " 혹은 '와 같은 인용 문자로 둘러싸일 필요가 있다. read_csv() 는 인용 문자가 "라고 가정한다. 이를 변경하려면 read_delim() 을 대신 사용하면 된다. 다음 텍스트를 데이터프레임으로 읽으려면 어떤 인수를 설정해야하는가?
+```{r}
+"x,y\n1,'a,b'"
+
+```
+read_delim()을 사용할 경우, 구분 문자로 ","를 지정하고 quote 인수를 설정해야 한다.
+```{r}
+x <- "x,y\n1,'a,b'"
+read_delim(x, ",", quote = "'", show_col_types = FALSE)
+```
+또한 read_csv()는 quote 인수를 지원한다.
+
+```{r}
+read_csv(x, quote = "'", show_col_types = FALSE)
+```
+
+#### 5. 다음 각 인라인 CSV 파일에 어떤 문제가 있는지 확인하라. 코드를 실행하면 어떻게 되는가?
+```{r}
+#1
+read_csv("a,b\n1,2,3\n4,5,6")
+#> Warning: One or more parsing issues, see `problems()` for details
+#> Rows: 2 Columns: 2
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: ","
+#> dbl (1): a
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> # A tibble: 2 × 2
+#>       a     b
+#>   <dbl> <dbl>
+#> 1     1    23
+#> 2     4    56
+```
+두 개의 열(a와 b)만 지정되어 있지만, 각 행에는 세 개의 값이 있습니다. 그래서 마지막 열 값이 잘린다.
+```{r}
+#2
+read_csv("a,b,c\n1,2\n1,2,3,4")
+#> Warning: One or more parsing issues, see `problems()` for details
+#> Rows: 2 Columns: 3
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: ","
+#> dbl (2): a, b
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> # A tibble: 2 × 3
+#>       a     b     c
+#>   <dbl> <dbl> <dbl>
+#> 1     1     2    NA
+#> 2     1     2    34
+```
+헤더에는 세 개의 열이 있지만, 첫 번째 행에는 두 개의 값만 있고 두 번째 행에는 네 개의 값이 있다. 첫 번째 행에서는 c 열이 결측치로 설정되고, 두 번째 행에서는 추가된 값이 잘린다.
+```{r}
+#3
+read_csv("a,b\n\"1")
+#> Rows: 0 Columns: 2
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: ","
+#> chr (2): a, b
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> # A tibble: 0 × 2
+#> # … with 2 variables: a <chr>, b <chr>
+```
+1이라는 열 값이 열림 표시만 있고 닫히지 않았기 때문에 의도한 바가 불분명하다. 인용이 닫히지 않아 a는 숫자형으로 처리되고, b는 결측치로 설정된다.
+```{r}
+#4
+read_csv("a,b\n1,2\na,b")
+#> Rows: 2 Columns: 2
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: ","
+#> chr (2): a, b
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> # A tibble: 2 × 2
+#>   a     b    
+#>   <chr> <chr>
+#> 1 1     2    
+#> 2 a     b
+```
+
+"a"와 "b"가 숫자가 아닌 문자열을 포함하고 있으므로 문자형으로 처리된다. 이것이 의도된 것일 수도 있고, 1,2와 a,b가 값으로 지정되길 원했던 것일 수도 있다.
+```{r}
+#5
+read_csv("a;b\n1;3")
+#> Rows: 1 Columns: 1
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: ","
+#> chr (1): a;b
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> # A tibble: 1 × 1
+#>   `a;b`
+#>   <chr>
+#> 1 1;3
+```
+데이터가 ";"로 구분되어 있다. 이 경우 read_csv2()를 사용하면 더 적합하다.
